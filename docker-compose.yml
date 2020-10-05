@@ -1,0 +1,119 @@
+version: "3.8"
+
+services:
+  chirpstack-network-server:
+    build:
+      context: "./chirpstack-network-server"
+      dockerfile: Dockerfile
+      args:
+        VERSION: "v3.10.0"
+    environment:
+      APPLICATION_SERVER__EXTERNAL_API__JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - ./chirpstack-network-server/configuration:/etc/chirpstack-network-server
+    networks:
+      - nw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "16m"
+        max-file: "1"
+
+  chirpstack-application-server:
+    build:
+      context: "./chirpstack-application-server"
+      dockerfile: Dockerfile
+      args:
+        VERSION: "v3.12.2"
+    networks:
+      - nw
+    ports:
+      - 8080:8080
+    volumes:
+      - ./chirpstack-application-server/configuration:/etc/chirpstack-application-server
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "16m"
+        max-file: "1"
+
+
+  chirpstack-gateway-bridge:
+    build:
+      context: "./chirpstack-gateway-bridge"
+      dockerfile: Dockerfile
+      args:
+        VERSION: "v3.9.2"
+    ports:
+      - 1700:1700/udp
+    networks:
+      - nw
+    volumes:
+      - ./chirpstack-gateway-bridge/configuration:/etc/chirpstack-gateway-bridge
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "16m"
+        max-file: "1"
+
+#  chirpstack-geolocation-server:
+#    build:
+#      context: "./chirpstack-geolocation-server"
+#      dockerfile: Dockerfile
+#      args:
+#        VERSION: "v3.3.1"
+#    volumes:
+#      - ./chirpstack-geolocation-server/configuration:/etc/chirpstack-geolocation-server
+#    networks:
+#      - nw
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "16m"
+#        max-file: "1"
+
+  postgresql:
+    image: postgres:9.6-alpine
+    environment:
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - ./postgresql/configuration/initdb:/docker-entrypoint-initdb.d
+      - postgresqldata:/var/lib/postgresql/data
+    networks:
+      - nw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "16m"
+        max-file: "1"
+
+  redis:
+    image: redis:5-alpine
+    volumes:
+      - redisdata:/data
+    networks:
+      - nw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "16m"
+        max-file: "1"
+
+  mosquitto:
+    image: eclipse-mosquitto
+ #   ports:
+ #     - 1883:1883
+    networks:
+      - nw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "16m"
+        max-file: "1"
+
+volumes:
+  postgresqldata:
+  redisdata:
+
+networks:
+  nw:
