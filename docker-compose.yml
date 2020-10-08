@@ -20,11 +20,12 @@ services:
         max-file: "1"
 
   chirpstack-application-server:
-    build:
-      context: "./chirpstack-application-server"
-      dockerfile: Dockerfile
-      args:
-        VERSION: "v3.12.2"
+    #build:
+    #  context: "./chirpstack-application-server"
+    #  dockerfile: Dockerfile
+    #  args:
+    #    VERSION: "v3.12.2"
+    image: schnack/chirpstack-application-server
     environment:
       APPLICATION_SERVER__EXTERNAL_API__JWT_SECRET: ${JWT_SECRET}
     networks:
